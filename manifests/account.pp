@@ -3,8 +3,8 @@ define accounts::account(
   $ensure                   = present,
   $comment                  = undef,
   $user                     = $name,
-  $groups                   = [],
   $groups_membership        = $::accounts::groups_membership,
+  $usergroups               = $::accounts::usergroups,
   $authorized_keys          = [],
   $authorized_keys_target   = undef,
   $purge_ssh_keys           = $::accounts::purge_ssh_keys,
@@ -18,18 +18,21 @@ define accounts::account(
   $gid                      = undef,
   $ssh_options              = undef,
 ) {
+
   $account = $user # for strformat mapping...
+  $_groups = user_is_group_member($user, $usergroups)
+
   if $user =~ /^@(\S+)$/ {
-    if ! has_key($::accounts::usergroups, $1) {
+    if ! has_key($usergroups, $1) {
       fail "Can't find usergroup : ${1}"
     }
     ensure_resource(
       accounts::account,
-      $::accounts::usergroups[$1],
+      $usergroups[$1]['members'],
       {
         ensure                   => $ensure,
         comment                  => $comment,
-        groups                   => $groups,
+        groups                   => $_groups,
         authorized_keys          => $authorized_keys,
         authorized_keys_target   => $authorized_keys_target,
         purge_ssh_keys           => $purge_ssh_keys,
@@ -58,7 +61,7 @@ define accounts::account(
         {
           ensure     => $ensure,
           comment    => $comment,
-          groups     => $groups,
+          groups     => $_groups,
           home       => $_home,
           password   => $password,
           managehome => $managehome,

@@ -1,6 +1,5 @@
 # See README.md for details.
 class accounts(
-  $groups                   = {},
   $groups_membership        = undef,
   $ssh_keys                 = {},
   $users                    = {},
@@ -16,7 +15,11 @@ class accounts(
 ) {
   include ::accounts::config
 
-  create_resources(group, $groups)
+  # create any groups found in the usergroups hash
+  group {
+    keys($usergroups):
+      ensure => present,
+  }
 
   create_resources(accounts::account, $accounts)
 

@@ -19,7 +19,7 @@ define accounts::authorized_key(
     }
     ensure_resource(
       accounts::authorized_key,
-      suffix($::accounts::usergroups[$1], "-on-${account}"),
+      suffix($::accounts::usergroups[$1]['members'], "-on-${account}"),
       {
         ensure                   => $ensure,
         options                  => $options,
